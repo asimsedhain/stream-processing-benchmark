@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use std::sync::mpsc;
+use std::thread;
 use stream_processing::uitls::get_size_arg;
 use stream_processing::{EnrichedTrade, Generator, Message};
 
@@ -6,12 +8,25 @@ fn main() {
     let n = get_size_arg();
 
     let mut gen = Generator::default();
+    let pipeline = Pipeline::new();
+    let channel_size = std::cmp::max(std::cmp::min(n / 1000, 100_000), 1000);
+    let (tx, rx) = mpsc::sync_channel(channel_size);
 
-    let mut pipeline = Pipeline::new();
-    for i in 0..n {
-        let message = gen.generate(i);
-        let _ = pipeline.process(message);
-    }
+    thread::scope(|s| {
+        s.spawn(|| {
+            for i in 0..n {
+                let _ = tx.send(gen.generate(i));
+            }
+            drop(tx);
+        });
+
+        s.spawn(move || {
+            let mut pipeline = pipeline;
+            while let Ok(message) = rx.recv() {
+                let _ = pipeline.process(message);
+            }
+        });
+    });
 }
 
 struct Pipeline {
