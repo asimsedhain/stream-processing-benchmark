@@ -1,5 +1,5 @@
-pub mod utils;
 pub mod pipeline;
+pub mod utils;
 
 pub enum Side {
     Buy,
@@ -56,14 +56,15 @@ pub struct EnrichedTrade {
     pub side: Side,
 }
 
-const MAPPING_SIZE: usize = 1000;
+const MAPPING_SIZE: usize = 10000;
 pub struct Generator {
     instrument_mapping: [Instrument; MAPPING_SIZE],
     seen_count: usize,
+    max_size: usize,
 }
 
 impl Generator {
-    pub fn new() -> Generator {
+    pub fn new(max_size: usize) -> Generator {
         let tickers = [
             "AAPL", "MSFT", "AMZN", "NVDA", "GOOGL", "TSLA", "GOOG", "META", "UNH", "XOM",
         ];
@@ -87,13 +88,14 @@ impl Generator {
         Generator {
             instrument_mapping: mapping,
             seen_count: 0,
+            max_size,
         }
     }
     pub fn generate(&mut self, size: usize) -> Message {
         if size % MAPPING_SIZE == 0 {
             self.seen_count += 1;
         }
-        if size % 2000 == 0 {
+        if size % (self.max_size / 10) == 0 {
             let i = (size % self.seen_count) % MAPPING_SIZE;
             let instrument = self.instrument_mapping[i].clone();
             Message::Instrument(instrument)
@@ -107,11 +109,5 @@ impl Generator {
                 side: Side::Sell,
             })
         }
-    }
-}
-
-impl Default for Generator {
-    fn default() -> Self {
-        Self::new()
     }
 }

@@ -9,7 +9,7 @@ fn main() {
     let n = get_size_arg();
     let channel_size = get_channel_size(n);
 
-    let mut gen = Generator::default();
+    let mut gen = Generator::new(n);
     let pipeline = Pipeline::new();
     let (mut tx, mut rx) = RingBuffer::new(channel_size);
 

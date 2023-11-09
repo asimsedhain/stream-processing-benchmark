@@ -5,7 +5,7 @@ use stream_processing::Generator;
 fn main() {
     let n = get_size_arg();
 
-    let mut gen = Generator::default();
+    let mut gen = Generator::new(n);
 
     let mut pipeline = Pipeline::new();
     for i in 0..n {
