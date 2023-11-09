@@ -1,6 +1,6 @@
-use std::collections::HashMap;
-use stream_processing::uitls::get_size_arg;
-use stream_processing::{EnrichedTrade, Generator, Message};
+use stream_processing::pipeline::Pipeline;
+use stream_processing::utils::get_size_arg;
+use stream_processing::Generator;
 
 fn main() {
     let n = get_size_arg();
@@ -11,36 +11,5 @@ fn main() {
     for i in 0..n {
         let message = gen.generate(i);
         let _ = pipeline.process(message);
-    }
-}
-
-struct Pipeline {
-    instrument_map: HashMap<u32, String>,
-}
-
-impl Pipeline {
-    fn new() -> Pipeline {
-        Pipeline {
-            instrument_map: HashMap::new(),
-        }
-    }
-    fn process(&mut self, message: Message) -> Option<EnrichedTrade> {
-        match message {
-            Message::Instrument(instrument) => {
-                self.instrument_map.insert(instrument.id, instrument.into());
-            }
-            Message::Trade(trade) => {
-                if let Some(instrument) = self.instrument_map.get(&trade.insturment_id) {
-                    return Some(EnrichedTrade {
-                        insturment: instrument.clone(),
-                        id: trade.id,
-                        user_id: trade.user_id,
-                        trade_px: trade.trade_px,
-                        side: trade.side,
-                    });
-                }
-            }
-        };
-        None
     }
 }
