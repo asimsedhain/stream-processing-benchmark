@@ -14,15 +14,17 @@ fn main() {
 
     thread::scope(|s| {
         s.spawn(move || {
+            for i in 0..n {
+                let _ = tx.send(gen.generate(i));
+            }
+            drop(tx);
+        });
+
+        s.spawn(move || {
             let mut pipeline = pipeline;
             while let Ok(message) = rx.recv() {
                 let _ = pipeline.process(message);
             }
         });
-
-        for i in 0..n {
-            let _ = tx.send(gen.generate(i));
-        }
-        drop(tx);
     });
 }
