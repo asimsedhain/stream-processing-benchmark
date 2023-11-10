@@ -1,11 +1,11 @@
 use stream_processing::pipeline::Pipeline;
 use stream_processing::utils::get_size_arg;
-use stream_processing::Generator;
+use stream_processing::{default_generator, Generator};
 
 fn main() {
     let n = get_size_arg();
 
-    let mut gen = Generator::new(n);
+    let mut gen = default_generator(n);
 
     let mut pipeline = Pipeline::new();
     for i in 0..n {

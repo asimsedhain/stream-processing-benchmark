@@ -1,24 +1,49 @@
+use fake::faker::company::en::CompanySuffix;
+use fake::faker::name::en::Name;
+use fake::Dummy;
+
+pub mod generator;
 pub mod pipeline;
 pub mod utils;
 
+pub use generator::{FakeGenerator, Generator, StaticGenerator, MAPPING_SIZE};
+
+pub fn default_generator(max_size: usize) -> impl Generator {
+    //StaticGenerator::new(max_size)
+    FakeGenerator::default()
+}
+
+#[derive(Dummy)]
 pub enum Side {
     Buy,
     Sell,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Dummy)]
 pub enum OptionType {
     Call,
     Put,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Dummy)]
 pub struct Instrument {
+    #[dummy(faker = "0..10000")]
     pub id: u32,
+    #[dummy(faker = "CompanySuffix()")]
     pub ticker: String,
+    #[dummy(faker = "0..1000")]
     pub strike: u32,
+    #[dummy(faker = "100000..999999")]
     pub expiry: u32,
     pub call_or_put: OptionType,
+}
+
+#[derive(Dummy)]
+pub struct User {
+    #[dummy(faker = "0..1000")]
+    pub id: u32,
+    #[dummy(faker = "Name()")]
+    pub username: String,
 }
 
 impl From<Instrument> for String {
@@ -35,10 +60,15 @@ impl From<Instrument> for String {
     }
 }
 
+#[derive(Dummy)]
 pub struct Trade {
+    #[dummy(faker = "0..10000000")]
     pub id: u32,
+    #[dummy(faker = "0..10000")]
     pub insturment_id: u32,
+    #[dummy(faker = "0..10000")]
     pub user_id: u32,
+    #[dummy(faker = "0..100")]
     pub trade_px: u32,
     pub side: Side,
 }
@@ -46,68 +76,13 @@ pub struct Trade {
 pub enum Message {
     Instrument(Instrument),
     Trade(Trade),
+    User(User),
 }
 
 pub struct EnrichedTrade {
     pub id: u32,
     pub insturment: String,
-    pub user_id: u32,
+    pub user: String,
     pub trade_px: u32,
     pub side: Side,
-}
-
-const MAPPING_SIZE: usize = 10000;
-pub struct Generator {
-    instrument_mapping: [Instrument; MAPPING_SIZE],
-    seen_count: usize,
-    max_size: usize,
-}
-
-impl Generator {
-    pub fn new(max_size: usize) -> Generator {
-        let tickers = [
-            "AAPL", "MSFT", "AMZN", "NVDA", "GOOGL", "TSLA", "GOOG", "META", "UNH", "XOM",
-        ];
-
-        let mapping: [Instrument; MAPPING_SIZE] = std::array::from_fn(|i| {
-            let ticker = tickers[i % tickers.len()];
-
-            let option_t = if i % 2 == 0 {
-                OptionType::Call
-            } else {
-                OptionType::Put
-            };
-            Instrument {
-                id: i as u32,
-                ticker: ticker.to_string(),
-                strike: i as u32 * 113,
-                expiry: 231105,
-                call_or_put: option_t,
-            }
-        });
-        Generator {
-            instrument_mapping: mapping,
-            seen_count: 0,
-            max_size,
-        }
-    }
-    pub fn generate(&mut self, size: usize) -> Message {
-        if size % MAPPING_SIZE == 0 {
-            self.seen_count += 1;
-        }
-        if size % (self.max_size / 10) == 0 {
-            let i = (size % self.seen_count) % MAPPING_SIZE;
-            let instrument = self.instrument_mapping[i].clone();
-            Message::Instrument(instrument)
-        } else {
-            let size = size as u32;
-            Message::Trade(Trade {
-                id: size,
-                insturment_id: size % self.seen_count as u32,
-                user_id: size % 113,
-                trade_px: 1,
-                side: Side::Sell,
-            })
-        }
-    }
 }
