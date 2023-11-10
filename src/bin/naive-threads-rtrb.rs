@@ -2,7 +2,7 @@ use rtrb::RingBuffer;
 use std::thread;
 use std::time::Duration;
 use stream_processing::pipeline::Pipeline;
-use stream_processing::utils::{get_channel_size, get_size_arg};
+use stream_processing::utils::{get_channel_size, get_size_arg, push};
 use stream_processing::{default_generator, Generator};
 
 fn main() {
@@ -16,17 +16,14 @@ fn main() {
     thread::scope(|s| {
         s.spawn(|| {
             for i in 0..n {
-                'inner: loop {
-                    if tx.push(gen.generate(i)).is_ok() {
-                        break 'inner;
-                    }
-                }
+                let gen_value = gen.generate(i);
+                push(&mut tx, gen_value);
             }
             drop(tx);
         });
 
         s.spawn(move || {
-            let mut pipeline = pipeline;
+            let pipeline = pipeline;
             'inner: loop {
                 match rx.pop() {
                     Ok(message) => {

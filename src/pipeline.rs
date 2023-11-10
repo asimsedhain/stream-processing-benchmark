@@ -1,19 +1,19 @@
 use crate::{EnrichedTrade, Message};
-use std::collections::HashMap;
+use dashmap::DashMap;
 
 pub struct Pipeline {
-    instrument_map: HashMap<u32, String>,
-    user_map: HashMap<u32, String>,
+    instrument_map: DashMap<u32, String>,
+    user_map: DashMap<u32, String>,
 }
 
 impl Pipeline {
     pub fn new() -> Pipeline {
         Pipeline {
-            instrument_map: HashMap::new(),
-            user_map: HashMap::new(),
+            instrument_map: DashMap::new(),
+            user_map: DashMap::new(),
         }
     }
-    pub fn process(&mut self, message: Message) -> Option<EnrichedTrade> {
+    pub fn process(&self, message: Message) -> Option<EnrichedTrade> {
         match message {
             Message::Instrument(instrument) => {
                 self.instrument_map.insert(instrument.id, instrument.into());

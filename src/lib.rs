@@ -8,7 +8,7 @@ pub mod utils;
 
 pub use generator::{FakeGenerator, Generator, StaticGenerator, MAPPING_SIZE};
 
-pub fn default_generator(max_size: usize) -> impl Generator {
+pub fn default_generator(_max_size: usize) -> impl Generator {
     //StaticGenerator::new(max_size)
     FakeGenerator::default()
 }

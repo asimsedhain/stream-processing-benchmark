@@ -21,7 +21,7 @@ fn main() {
         });
 
         s.spawn(move || {
-            let mut pipeline = pipeline;
+            let pipeline = pipeline;
             while let Ok(message) = rx.recv() {
                 let _ = pipeline.process(message);
             }

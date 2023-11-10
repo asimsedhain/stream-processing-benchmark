@@ -7,7 +7,7 @@ fn main() {
 
     let mut gen = default_generator(n);
 
-    let mut pipeline = Pipeline::new();
+    let pipeline = Pipeline::new();
     for i in 0..n {
         let message = gen.generate(i);
         let _ = pipeline.process(message);
