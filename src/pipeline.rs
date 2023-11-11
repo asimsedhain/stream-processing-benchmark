@@ -1,4 +1,4 @@
-use crate::{EnrichedTrade, Message};
+use crate::{EnrichedLog, EnrichedMessage, EnrichedTrade, Message};
 use dashmap::DashMap;
 
 pub struct Pipeline {
@@ -13,7 +13,7 @@ impl Pipeline {
             user_map: DashMap::new(),
         }
     }
-    pub fn process(&self, message: Message) -> Option<EnrichedTrade> {
+    pub fn process(&self, message: Message) -> Option<EnrichedMessage> {
         match message {
             Message::Instrument(instrument) => {
                 self.instrument_map.insert(instrument.id, instrument.into());
@@ -29,13 +29,23 @@ impl Pipeline {
                     return None;
                 };
 
-                return Some(EnrichedTrade {
+                return Some(EnrichedMessage::Trade(EnrichedTrade {
                     insturment: instrument.clone(),
                     id: trade.id,
                     user: user.clone(),
                     trade_px: trade.trade_px,
                     side: trade.side,
-                });
+                }));
+            }
+            Message::Log(log) => {
+                let Some(instrument) = self.instrument_map.get(&log.insturment_id) else {
+                    return None;
+                };
+
+                return Some(EnrichedMessage::Log(EnrichedLog {
+                    insturment: instrument.clone(),
+                    message: log.message,
+                }));
             }
         };
         None

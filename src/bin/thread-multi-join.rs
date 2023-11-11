@@ -13,7 +13,7 @@ fn main() {
 
     let mut gen = default_generator(n);
     let pipeline = Arc::new(Pipeline::new());
-    let (mut trade_tx, mut trade_rx) = RingBuffer::new(channel_size);
+    let (mut trade_tx, mut trade_rx) = RingBuffer::new(channel_size / 2);
     let (meta_tx, mut meta_rx) = RingBuffer::new(channel_size / 10);
 
     thread::scope(|s| {
@@ -23,7 +23,9 @@ fn main() {
                 let gen_value = gen.generate(i);
 
                 match gen_value {
-                    msg @ (Message::Instrument(_) | Message::User(_)) => push(&mut meta_tx, msg),
+                    msg @ (Message::Instrument(_) | Message::User(_) | Message::Log(_)) => {
+                        push(&mut meta_tx, msg)
+                    }
                     msg @ Message::Trade(_) => push(&mut trade_tx, msg),
                 }
             }
@@ -31,35 +33,32 @@ fn main() {
             drop(trade_tx);
         });
 
-        {
+        s.spawn({
             let pipeline = pipeline.clone();
-            s.spawn(move || 'inner: loop {
+            move || 'inner: loop {
                 match trade_rx.pop() {
                     Ok(message) => {
                         let _ = pipeline.process(message);
                     }
                     Err(_) => {
-                        thread::sleep(Duration::from_micros(100));
                         if trade_rx.is_abandoned() {
                             break 'inner;
                         }
+                        thread::sleep(Duration::from_micros(100));
                     }
                 }
-            });
-        }
+            }
+        });
 
-        s.spawn(move || {
-            let pipeline = pipeline;
-            'inner: loop {
-                match meta_rx.pop() {
-                    Ok(message) => {
-                        let _ = pipeline.process(message);
-                    }
-                    Err(_) => {
-                        thread::sleep(Duration::from_micros(100));
-                        if meta_rx.is_abandoned() {
-                            break 'inner;
-                        }
+        s.spawn(move || 'inner: loop {
+            match meta_rx.pop() {
+                Ok(message) => {
+                    let _ = pipeline.process(message);
+                }
+                Err(_) => {
+                    thread::sleep(Duration::from_micros(100));
+                    if meta_rx.is_abandoned() {
+                        break 'inner;
                     }
                 }
             }

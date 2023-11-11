@@ -1,4 +1,4 @@
-use fake::faker::company::en::CompanySuffix;
+use fake::faker::company::en::{Buzzword, CompanySuffix};
 use fake::faker::name::en::Name;
 use fake::Dummy;
 
@@ -73,10 +73,24 @@ pub struct Trade {
     pub side: Side,
 }
 
+#[derive(Dummy)]
+pub struct Log {
+    #[dummy(faker = "Buzzword()")]
+    pub message: String,
+    #[dummy(faker = "0..10000")]
+    pub insturment_id: u32,
+}
+
 pub enum Message {
     Instrument(Instrument),
     Trade(Trade),
     User(User),
+    Log(Log),
+}
+
+pub enum EnrichedMessage {
+    Log(EnrichedLog),
+    Trade(EnrichedTrade),
 }
 
 pub struct EnrichedTrade {
@@ -85,4 +99,9 @@ pub struct EnrichedTrade {
     pub user: String,
     pub trade_px: u32,
     pub side: Side,
+}
+
+pub struct EnrichedLog {
+    pub message: String,
+    pub insturment: String,
 }

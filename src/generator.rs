@@ -1,5 +1,6 @@
 use crate::{Instrument, Message, OptionType, Side, Trade};
 use fake::{Fake, Faker};
+use rand::distributions::Uniform;
 use rand::rngs::StdRng;
 use rand::Rng;
 use rand::SeedableRng;
@@ -71,6 +72,7 @@ impl Generator for StaticGenerator {
 }
 
 pub struct FakeGenerator {
+    uniform: Uniform<u8>,
     rng: StdRng,
 }
 
@@ -81,7 +83,10 @@ impl Default for FakeGenerator {
             0, 0, 0, 0, 0, 0, 0, 0, 0,
         ]);
 
-        FakeGenerator { rng }
+        FakeGenerator {
+            rng,
+            uniform: Uniform::from(1..=100),
+        }
     }
 }
 
@@ -96,15 +101,15 @@ impl Generator for FakeGenerator {
             return Message::Instrument(Faker.fake_with_rng(&mut self.rng));
         }
 
-        let gen = self.rng.gen_range(0..99);
+        let gen = self.rng.sample(self.uniform);
 
         // generate instrument 10% of the time
-        if gen == 0 {
-            Message::User(Faker.fake_with_rng(&mut self.rng))
-        } else if gen < 11 {
-            return Message::Instrument(Faker.fake_with_rng(&mut self.rng));
-        } else {
-            return Message::Trade(Faker.fake_with_rng(&mut self.rng));
+        match gen {
+            1..=2 => Message::User(Faker.fake_with_rng(&mut self.rng)),
+            3..=10 => Message::Instrument(Faker.fake_with_rng(&mut self.rng)),
+            11..=55 => Message::Trade(Faker.fake_with_rng(&mut self.rng)),
+            56..=100 => Message::Log(Faker.fake_with_rng(&mut self.rng)),
+            _ => panic!(),
         }
     }
 }
