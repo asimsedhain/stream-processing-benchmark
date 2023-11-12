@@ -23,9 +23,7 @@ fn main() {
                 let gen_value = gen.generate(i);
 
                 match gen_value {
-                    msg @ (Message::Instrument(_) | Message::User(_) | Message::Log(_)) => {
-                        push(&mut meta_tx, msg)
-                    }
+                    msg @ Message::Instrument(_) => push(&mut meta_tx, msg),
                     msg @ Message::Trade(_) => push(&mut trade_tx, msg),
                 }
             }

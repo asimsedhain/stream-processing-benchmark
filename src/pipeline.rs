@@ -1,51 +1,34 @@
-use crate::{EnrichedLog, EnrichedMessage, EnrichedTrade, Message};
+use crate::{EnrichedTrade, Message};
 use dashmap::DashMap;
 
 pub struct Pipeline {
     instrument_map: DashMap<u32, String>,
-    user_map: DashMap<u32, String>,
 }
 
 impl Pipeline {
     pub fn new() -> Pipeline {
         Pipeline {
             instrument_map: DashMap::new(),
-            user_map: DashMap::new(),
         }
     }
-    pub fn process(&self, message: Message) -> Option<EnrichedMessage> {
+    pub fn process(&self, message: Message) -> Option<EnrichedTrade> {
         match message {
             Message::Instrument(instrument) => {
                 self.instrument_map.insert(instrument.id, instrument.into());
             }
-            Message::User(user) => {
-                self.user_map.insert(user.id, user.username);
-            }
+
             Message::Trade(trade) => {
                 let Some(instrument) = self.instrument_map.get(&trade.insturment_id) else {
                     return None;
                 };
-                let Some(user) = self.user_map.get(&trade.user_id) else {
-                    return None;
-                };
 
-                return Some(EnrichedMessage::Trade(EnrichedTrade {
+                return Some(EnrichedTrade {
                     insturment: instrument.clone(),
                     id: trade.id,
-                    user: user.clone(),
+                    user_id: trade.user_id,
                     trade_px: trade.trade_px,
                     side: trade.side,
-                }));
-            }
-            Message::Log(log) => {
-                let Some(instrument) = self.instrument_map.get(&log.insturment_id) else {
-                    return None;
-                };
-
-                return Some(EnrichedMessage::Log(EnrichedLog {
-                    insturment: instrument.clone(),
-                    message: log.message,
-                }));
+                });
             }
         };
         None
