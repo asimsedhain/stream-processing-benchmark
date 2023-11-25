@@ -6,7 +6,7 @@ build:
 
 RUN_SIZE := 10000000
 
-ALL_TARGETS := naive naive-threads-std naive-threads-rtrb thread-multi-join
+ALL_TARGETS := naive naive-std-hash naive-threads-std naive-threads-rtrb thread-multi-join
 
 TARGET_BASE_PATH := ./target/release/
 BENCH_COMMAND := $(foreach wrd,$(ALL_TARGETS),"$(TARGET_BASE_PATH)$(wrd) $(RUN_SIZE)")
