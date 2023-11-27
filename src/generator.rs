@@ -92,9 +92,14 @@ impl Default for FakeGenerator {
 
 impl Generator for FakeGenerator {
     fn generate(&mut self, size: usize) -> Message {
-        // generate 1000 instruments in the begining
 
-        if size < 1000 {
+        // generate 100 users in the begining
+        if size < 100 {
+            return Message::User(Faker.fake_with_rng(&mut self.rng));
+        }
+
+        // generate 1000 instruments in the begining
+        if size < 1100 {
             return Message::Instrument(Faker.fake_with_rng(&mut self.rng));
         }
 
@@ -102,7 +107,8 @@ impl Generator for FakeGenerator {
 
         // generate instrument 10% of the time
         match gen {
-            1..=10 => Message::Instrument(Faker.fake_with_rng(&mut self.rng)),
+            1..=2 => Message::User(Faker.fake_with_rng(&mut self.rng)),
+            3..=10 => Message::Instrument(Faker.fake_with_rng(&mut self.rng)),
             11..=100 => Message::Trade(Faker.fake_with_rng(&mut self.rng)),
             _ => panic!(),
         }

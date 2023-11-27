@@ -1,4 +1,5 @@
 use fake::faker::company::en::CompanySuffix;
+use fake::faker::name::en::Name;
 use fake::Dummy;
 
 pub mod generator;
@@ -36,6 +37,14 @@ pub struct Instrument {
     pub call_or_put: OptionType,
 }
 
+#[derive(Dummy)]
+pub struct User {
+    #[dummy(faker = "0..1000")]
+    pub id: u32,
+    #[dummy(faker = "Name()")]
+    pub username: String,
+}
+
 impl From<Instrument> for String {
     fn from(instrument: Instrument) -> Self {
         let option_t = if let OptionType::Call = instrument.call_or_put {
@@ -66,12 +75,13 @@ pub struct Trade {
 pub enum Message {
     Instrument(Instrument),
     Trade(Trade),
+    User(User),
 }
 
 pub struct EnrichedTrade {
     pub id: u32,
     pub insturment: String,
-    pub user_id: u32,
+    pub user: String,
     pub trade_px: u32,
     pub side: Side,
 }
