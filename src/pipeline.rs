@@ -3,13 +3,13 @@ use std::collections::HashMap;
 use crate::{EnrichedTrade, Message};
 use dashmap::DashMap;
 
-pub struct Pipeline {
+pub struct PipelineDash {
     instrument_map: DashMap<u32, String>,
 }
 
-impl Pipeline {
-    pub fn new() -> Pipeline {
-        Pipeline {
+impl PipelineDash {
+    pub fn new() -> PipelineDash {
+        PipelineDash {
             instrument_map: DashMap::new(),
         }
     }
@@ -37,7 +37,7 @@ impl Pipeline {
     }
 }
 
-impl Default for Pipeline {
+impl Default for PipelineDash {
     fn default() -> Self {
         Self::new()
     }

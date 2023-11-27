@@ -6,14 +6,13 @@ build:
 
 RUN_SIZE := 10000000
 
-#ALL_TARGETS := naive-dash-hash naive-std-hash naive-threads-std naive-threads-rtrb thread-multi-join
-ALL_TARGETS := naive-std-hash thread-std-hash-std-channel
+ALL_TARGETS := naive-std-hash naive-dash-hash thread-std-hash-std-channel thread-dash-hash-std-channel thread-dash-hash-rtrb-channel
 
 TARGET_BASE_PATH := ./target/release/
 BENCH_COMMAND := $(foreach wrd,$(ALL_TARGETS),"$(TARGET_BASE_PATH)$(wrd) $(RUN_SIZE)")
 
 bench: build
-	hyperfine --warmup 3 $(BENCH_COMMAND)
+	hyperfine --warmup 3 $(BENCH_COMMAND) --export-json bench.json
 
 
 bin?=naive

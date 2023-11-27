@@ -2,7 +2,7 @@ use rtrb::RingBuffer;
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
-use stream_processing::pipeline::Pipeline;
+use stream_processing::pipeline::PipelineDash;
 use stream_processing::utils::push;
 use stream_processing::utils::{get_channel_size, get_size_arg};
 use stream_processing::{default_generator, Generator, Message};
@@ -12,7 +12,7 @@ fn main() {
     let channel_size = get_channel_size(n);
 
     let mut gen = default_generator(n);
-    let pipeline = Arc::new(Pipeline::new());
+    let pipeline = Arc::new(PipelineDash::new());
     let (mut trade_tx, mut trade_rx) = RingBuffer::new(channel_size / 2);
     let (meta_tx, mut meta_rx) = RingBuffer::new(channel_size / 10);
 
