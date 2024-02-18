@@ -1,6 +1,6 @@
 use std::sync::mpsc;
 use std::thread;
-use stream_processing::pipeline::Pipeline;
+use stream_processing::pipeline::DashmapPipeline;
 use stream_processing::utils::{get_channel_size, get_size_arg};
 use stream_processing::{default_generator, Generator};
 
@@ -9,7 +9,7 @@ fn main() {
     let channel_size = get_channel_size(n);
 
     let mut gen = default_generator(n);
-    let pipeline = Pipeline::new();
+    let pipeline = DashmapPipeline::default();
     let (tx, rx) = mpsc::sync_channel(channel_size);
 
     thread::scope(|s| {

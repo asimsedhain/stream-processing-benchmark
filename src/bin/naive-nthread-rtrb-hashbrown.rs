@@ -1,7 +1,7 @@
 use rtrb::RingBuffer;
 use std::thread;
 use std::time::Duration;
-use stream_processing::pipeline::Pipeline;
+use stream_processing::pipeline::HashbrownPipeline;
 use stream_processing::utils::{get_channel_size, get_size_arg, push};
 use stream_processing::{default_generator, Generator};
 
@@ -10,7 +10,7 @@ fn main() {
     let channel_size = get_channel_size(n);
 
     let mut gen = default_generator(n);
-    let pipeline = Pipeline::new();
+    let pipeline = HashbrownPipeline::default();
     let (mut tx, mut rx) = RingBuffer::new(channel_size);
 
     thread::scope(|s| {
@@ -23,7 +23,7 @@ fn main() {
         });
 
         s.spawn(move || {
-            let pipeline = pipeline;
+            let mut pipeline = pipeline;
             'inner: loop {
                 match rx.pop() {
                     Ok(message) => {
